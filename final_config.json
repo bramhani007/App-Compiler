@@ -1,0 +1,259 @@
+{
+  "ui": {
+    "pages": [
+      {
+        "name": "Login",
+        "layout": "centered",
+        "components": [
+          {
+            "type": "Form",
+            "props": {
+              "title": "Login to CRM",
+              "fields": ["username", "password"]
+            },
+            "dataBinding": "POST /login"
+          }
+        ]
+      },
+      {
+        "name": "Dashboard",
+        "layout": "grid",
+        "components": [
+          {
+            "type": "Card",
+            "props": {
+              "title": "Welcome back!",
+              "content": "Use this dashboard to manage your sales pipeline and contacts."
+            }
+          },
+          {
+            "type": "Button",
+            "props": {
+              "label": "View Contacts",
+              "action": "navigate_to_contacts"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Contacts",
+        "layout": "sidebar",
+        "components": [
+          {
+            "type": "Table",
+            "props": {
+              "title": "Contacts List",
+              "headers": ["name", "email", "phone", "company"]
+            },
+            "dataBinding": "GET /contacts"
+          },
+          {
+            "type": "Form",
+            "props": {
+              "title": "Add New Contact",
+              "fields": ["name", "email", "phone", "company"]
+            },
+            "dataBinding": "POST /contacts"
+          }
+        ]
+      },
+      {
+        "name": "Payments",
+        "layout": "split",
+        "components": [
+          {
+            "type": "Table",
+            "props": {
+              "title": "Payment Records",
+              "headers": ["amount", "status", "payment_date"]
+            },
+            "dataBinding": "GET /payments"
+          },
+          {
+            "type": "Form",
+            "props": {
+              "title": "Process Premium Subscription",
+              "fields": ["card_number", "plan_type", "amount"]
+            },
+            "dataBinding": "POST /payments"
+          }
+        ]
+      },
+      {
+        "name": "Analytics",
+        "layout": "full-width",
+        "components": [
+          {
+            "type": "Chart",
+            "props": {
+              "title": "Sales Stats",
+              "type": "bar",
+              "metric": "conversion_rate"
+            },
+            "dataBinding": "GET /analytics"
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "endpoints": [
+      {
+        "path": "/login",
+        "method": "POST",
+        "response": {
+          "token": "string"
+        },
+        "authRequired": false
+      },
+      {
+        "path": "/contacts",
+        "method": "GET",
+        "response": {
+          "name": "string",
+          "email": "string",
+          "phone": "string",
+          "company": "string"
+        },
+        "authRequired": true,
+        "rolesAllowed": ["user", "admin"]
+      },
+      {
+        "path": "/contacts",
+        "method": "POST",
+        "response": {
+          "name": "string",
+          "email": "string",
+          "phone": "string",
+          "company": "string"
+        },
+        "authRequired": true,
+        "rolesAllowed": ["user", "admin"]
+      },
+      {
+        "path": "/payments",
+        "method": "GET",
+        "response": {
+          "amount": "number",
+          "status": "string",
+          "payment_date": "string"
+        },
+        "authRequired": true,
+        "rolesAllowed": ["user", "admin"]
+      },
+      {
+        "path": "/payments",
+        "method": "POST",
+        "response": {
+          "amount": "number",
+          "status": "string",
+          "payment_date": "string"
+        },
+        "authRequired": true,
+        "rolesAllowed": ["user", "admin"]
+      },
+      {
+        "path": "/analytics",
+        "method": "GET",
+        "response": {
+          "conversion_rate": "number",
+          "total_leads": "number"
+        },
+        "authRequired": true,
+        "rolesAllowed": ["admin"]
+      }
+    ]
+  },
+  "db": {
+    "tables": [
+      {
+        "name": "contacts",
+        "columns": [
+          {
+            "name": "id",
+            "type": "integer",
+            "constraints": "PRIMARY KEY AUTOINCREMENT"
+          },
+          {
+            "name": "name",
+            "type": "varchar(255)",
+            "constraints": "NOT NULL"
+          },
+          {
+            "name": "email",
+            "type": "varchar(255)",
+            "constraints": "UNIQUE"
+          },
+          {
+            "name": "phone",
+            "type": "varchar(50)",
+            "constraints": "NULL"
+          },
+          {
+            "name": "company",
+            "type": "varchar(255)",
+            "constraints": "NULL"
+          }
+        ],
+        "relations": []
+      },
+      {
+        "name": "payments",
+        "columns": [
+          {
+            "name": "id",
+            "type": "integer",
+            "constraints": "PRIMARY KEY AUTOINCREMENT"
+          },
+          {
+            "name": "amount",
+            "type": "decimal(10,2)",
+            "constraints": "NOT NULL"
+          },
+          {
+            "name": "status",
+            "type": "varchar(50)",
+            "constraints": "NOT NULL"
+          },
+          {
+            "name": "payment_date",
+            "type": "varchar(50)",
+            "constraints": "NOT NULL"
+          }
+        ],
+        "relations": []
+      }
+    ]
+  },
+  "auth": {
+    "roles": [
+      {
+        "name": "user",
+        "permissions": ["read_contacts", "write_contacts", "read_payments", "write_payments"]
+      },
+      {
+        "name": "admin",
+        "permissions": ["read_contacts", "write_contacts", "read_payments", "write_payments", "read_analytics"]
+      }
+    ],
+    "rules": [
+      "Users can access contacts and payments.",
+      "Only Admins can access analytics."
+    ]
+  },
+  "business_logic": {
+    "premium_features": ["premium_dashboard", "leads_export"],
+    "role_gates": [
+      {
+        "feature": "analytics_tab",
+        "required_plan": "enterprise",
+        "required_role": "admin"
+      }
+    ]
+  },
+  "assumptions": [
+    "Assume CRM will handle lead tracking, customer contact details, and basic sub-based payment status.",
+    "Assume Stripe or similar third-party gateway for credit card details.",
+    "Admins have all permissions of users plus custom sales reports access."
+  ]
+}

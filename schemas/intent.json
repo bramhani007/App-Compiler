@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "app_type": {
+            "type": "string"
+        },
+        "features": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "roles": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "business_rules": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "assumptions": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "clarification_needed": {
+            "type": "boolean"
+        },
+        "clarification_question": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "app_type",
+        "features",
+        "roles",
+        "business_rules",
+        "assumptions",
+        "clarification_needed"
+    ],
+    "additionalProperties": false
+}

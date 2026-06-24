@@ -1,0 +1,52 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "endpoints": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string"
+                    },
+                    "method": {
+                        "type": "string",
+                        "enum": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "DELETE"
+                        ]
+                    },
+                    "requestBody": {
+                        "type": "object"
+                    },
+                    "response": {
+                        "type": "object"
+                    },
+                    "authRequired": {
+                        "type": "boolean"
+                    },
+                    "rolesAllowed": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "path",
+                    "method",
+                    "response",
+                    "authRequired"
+                ],
+                "additionalProperties": false
+            }
+        }
+    },
+    "required": [
+        "endpoints"
+    ],
+    "additionalProperties": false
+}

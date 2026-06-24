@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "premium_features": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "role_gates": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "feature": {
+                        "type": "string"
+                    },
+                    "required_plan": {
+                        "type": "string"
+                    },
+                    "required_role": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "feature",
+                    "required_plan",
+                    "required_role"
+                ],
+                "additionalProperties": false
+            }
+        }
+    },
+    "required": [
+        "premium_features",
+        "role_gates"
+    ],
+    "additionalProperties": false
+}

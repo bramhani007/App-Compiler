@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 App Builder – Live Pipeline Preview</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0b0813;
+            --sidebar-bg: rgba(18, 14, 33, 0.7);
+            --card-bg: rgba(25, 20, 46, 0.45);
+            --border-color: rgba(147, 51, 234, 0.2);
+            --border-hover: rgba(147, 51, 234, 0.5);
+            --primary: #9333ea;
+            --primary-glow: rgba(147, 51, 234, 0.35);
+            --secondary: #ec4899;
+            --secondary-glow: rgba(236, 72, 153, 0.3);
+            --accent: #06b6d4;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(147, 51, 234, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(236, 72, 153, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(6, 182, 212, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* Layout Structure */
+        .workspace {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            flex-shrink: 0;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 8px;
+            box-shadow: 0 0 15px var(--primary-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .logo-title {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #d8b4fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .nav-item:hover {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: rgba(147, 51, 234, 0.25);
+            color: #ffffff;
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.25), rgba(236, 72, 153, 0.1));
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.15);
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .layout-tag {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Main Workspace Content Area */
+        .content-area {
+            flex-grow: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        /* 3D Scene Viewport next to Page title */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .page-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .page-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .page-desc {
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Pure CSS 3D Scene Container */
+        .scene3d-container {
+            width: 100px;
+            height: 100px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 3D Shape geometries (Cube) */
+        .cube-3d {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: spin3D 12s infinite linear;
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.6), rgba(236, 72, 153, 0.6));
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 15px rgba(147, 51, 234, 0.3);
+        }
+
+        .face-front  { transform: rotateY(0deg) translateZ(20px); }
+        .face-back   { transform: rotateY(180deg) translateZ(20px); }
+        .face-left   { transform: rotateY(-90deg) translateZ(20px); }
+        .face-right  { transform: rotateY(90deg) translateZ(20px); }
+        .face-top    { transform: rotateX(90deg) translateZ(20px); }
+        .face-bottom { transform: rotateX(-90deg) translateZ(20px); }
+
+        /* Floating 3D Orb/Sphere alternative */
+        .sphere-3d {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ec4899, #9333ea, #06b6d4);
+            box-shadow: 
+                inset -5px -5px 15px rgba(0,0,0,0.8),
+                inset 5px 5px 15px rgba(255,255,255,0.4),
+                0 0 25px var(--secondary-glow);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* App Page Layout Simulation containers */
+        .page-content-wrapper {
+            display: none;
+        }
+
+        .page-content-wrapper.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        /* Grid Layout */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Centered Layout */
+        .layout-centered {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 50vh;
+        }
+        .layout-centered > .component-card {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        /* Split layout (2 columns) */
+        .layout-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) {
+            .layout-split { grid-template-columns: 1fr; }
+        }
+
+        /* Sidebar layout */
+        .layout-sidebar {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) {
+            .layout-sidebar { grid-template-columns: 1fr; }
+        }
+
+        /* Full Width */
+        .layout-full-width {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Beautiful Component Cards */
+        .component-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .component-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.12);
+            transform: translateY(-4px);
+        }
+
+        .component-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .component-badge-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .component-type-badge {
+            background: rgba(147, 51, 234, 0.15);
+            border: 1px solid var(--border-color);
+            color: #d8b4fe;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .binding-badge {
+            background: rgba(6, 182, 212, 0.12);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            color: #22d3ee;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            letter-spacing: -0.2px;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Mock UI Rendering inside Card */
+        .mock-ui-preview {
+            background: rgba(10, 8, 20, 0.6);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .mock-ui-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .mock-ui-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .mock-input-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .mock-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .mock-input {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            color: #ffffff;
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+
+        .mock-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1.2rem;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            align-self: flex-start;
+            margin-top: 0.25rem;
+            box-shadow: 0 4px 10px rgba(147, 51, 234, 0.25);
+        }
+
+        /* Custom Table Mock */
+        .mock-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            color: var(--text-main);
+        }
+
+        .mock-table th {
+            text-align: left;
+            padding: 0.5rem 0.75rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.5px;
+        }
+
+        .mock-table td {
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: #e5e7eb;
+        }
+
+        .mock-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Mock Chart Representation */
+        .mock-chart-container {
+            height: 120px;
+            display: flex;
+            align-items: flex-end;
+            gap: 1.25rem;
+            padding-top: 1rem;
+            padding-bottom: 0.5rem;
+            justify-content: space-around;
+        }
+
+        .mock-chart-bar {
+            width: 35px;
+            background: linear-gradient(to top, var(--primary), var(--secondary));
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.25);
+            animation: barRise 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            position: relative;
+        }
+
+        .mock-chart-bar::after {
+            content: attr(data-val);
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Collapse / Property details view */
+        .inspector-details {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 1rem;
+        }
+
+        .inspector-summary {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            outline: none;
+            font-weight: 500;
+        }
+
+        .inspector-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .inspector-summary::before {
+            content: '▶';
+            font-size: 0.55rem;
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        details[open] .inspector-summary::before {
+            transform: rotate(90deg);
+        }
+
+        .json-code {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #a78bfa;
+            overflow-x: auto;
+            margin-top: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            line-height: 1.4;
+        }
+
+        /* SVG Icons Inline */
+        .icon {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Keyframes */
+        @keyframes spin3D {
+            0%   { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-10px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes barRise {
+            from { height: 0; }
+            to   { height: var(--target-height); }
+        }
+
+        /* Pipeline Flowchart styling */
+        .pipeline-progress-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            letter-spacing: -0.2px;
+            color: #ffffff;
+        }
+        .flowchart {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+        }
+        .flow-step {
+            padding: 0.5rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            text-align: center;
+            flex-grow: 1;
+        }
+        .flow-step.completed {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+            color: #4ade80;
+        }
+        .flow-step.active {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: var(--accent);
+            color: #22d3ee;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+            font-weight: 600;
+        }
+        .flow-arrow {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* IR Grid Styling */
+        .ir-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .ir-grid { grid-template-columns: 1fr; }
+        }
+        .ir-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+        .ir-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
+        }
+        .ir-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+        }
+        .ir-label {
+            color: var(--text-muted);
+        }
+        .ir-value {
+            font-weight: 500;
+            color: #ffffff;
+        }
+        .badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .feature-badge {
+            background: rgba(147, 51, 234, 0.12);
+            border: 1px solid rgba(147, 51, 234, 0.25);
+            color: #d8b4fe;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .role-badge {
+            background: rgba(236, 72, 153, 0.12);
+            border: 1px solid rgba(236, 72, 153, 0.25);
+            color: #fbcfe8;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .assumptions-list {
+            list-style-type: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .assumptions-list li {
+            font-size: 0.85rem;
+            color: var(--text-main);
+            padding-left: 1.25rem;
+            position: relative;
+            line-height: 1.4;
+        }
+        .assumptions-list li::before {
+            content: '👉';
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 0.8rem;
+        }
+
+        /* Entities structure */
+        .entities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+        .entity-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+        .entity-card h4 {
+            font-size: 0.9rem;
+            color: #ffffff;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+        .entity-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+        .entity-field {
+            background: rgba(6, 182, 212, 0.08);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            color: #99f6e4;
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* 3D Prism styling */
+        .prism-3d {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: spin3D 15s infinite linear;
+        }
+        .prism-3d::before, .prism-3d::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+        }
+        .prism-3d::before {
+            border-bottom: 35px solid rgba(6, 182, 212, 0.6);
+            transform: translateZ(10px) rotateX(15deg);
+            filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.4));
+        }
+        .prism-3d::after {
+            border-bottom: 35px solid rgba(147, 51, 234, 0.6);
+            transform: translateZ(-10px) rotateX(-15deg);
+            filter: drop-shadow(0 0 10px rgba(147, 51, 234, 0.4));
+        }
+        
+        .raw-ir-container {
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="workspace">
+        <!-- Left Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon">🧠</div>
+                <div class="logo-title">App Compiler</div>
+            </div>
+            
+            <nav style="margin-top: 1rem;">
+                <h3 class="nav-label">Navigation Pages</h3>
+                <ul class="nav-menu">
+                    {% for page in pages %}
+                    <li class="nav-item {% if loop.first %}active{% endif %}" onclick="switchPage('page-{{ page.name }}', this)">
+                        <span>📄 {{ page.name }}</span>
+                        <span class="layout-tag">{{ page.layout }}</span>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if ir %}
+                    <li class="nav-item" onclick="switchPage('compiler-trace', this)" style="border-top: 1px solid rgba(147, 51, 234, 0.1); margin-top: 0.5rem; padding-top: 0.75rem;">
+                        <span>⚙️ Compiler Trace</span>
+                        <span class="layout-tag" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">IR</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            
+            <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted);">
+                <p style="font-weight: 600; margin-bottom: 0.25rem;">Compiler Pipeline</p>
+                <p>Status: <span style="color: #22c55e;">● Live Simulation</span></p>
+                <p style="margin-top: 0.25rem;">Server Address: localhost:8000</p>
+            </div>
+        </aside>
+
+        <!-- Right Content Panels -->
+        <main class="content-area">
+            {% for page in pages %}
+            <div id="page-{{ page.name }}" class="page-content-wrapper {% if loop.first %}active{% endif %}">
+                
+                <!-- Page Title Area with 3D Shape -->
+                <div class="page-header">
+                    <div class="page-title-group">
+                        <h1 class="page-title">{{ page.name }} Page</h1>
+                        <div class="page-desc">
+                            <span>Layout Type:</span>
+                            <span class="layout-tag" style="background: rgba(147, 51, 234, 0.15); color: #e9d5ff;">{{ page.layout }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 3D Shape Container -->
+                    <div class="scene3d-container">
+                        {% if page.name == 'Login' %}
+                        <div class="cube-3d">
+                            <div class="cube-face face-front"></div>
+                            <div class="cube-face face-back"></div>
+                            <div class="cube-face face-left"></div>
+                            <div class="cube-face face-right"></div>
+                            <div class="cube-face face-top"></div>
+                            <div class="cube-face face-bottom"></div>
+                        </div>
+                        {% else %}
+                        <div class="sphere-3d"></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- App Layout Structure Render -->
+                <div style="margin-top: 2rem;" class="layout-{{ page.layout }}">
+                    {% for comp in page.components %}
+                    <section class="component-card">
+                        
+                        <div class="component-header">
+                            <div class="component-badge-group">
+                                <span class="component-type-badge">
+                                    {% if comp.type == 'Form' %}📝
+                                    {% elif comp.type == 'Table' %}📊
+                                    {% elif comp.type == 'Button' %}⚡
+                                    {% elif comp.type == 'Chart' %}📈
+                                    {% else %}📦{% endif %}
+                                    {{ comp.type }}
+                                </span>
+                                {% if comp.dataBinding %}
+                                <span class="binding-badge">
+                                    🔗 {{ comp.dataBinding }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Render Mock Component UI -->
+                        <div class="mock-ui-preview">
+                            {% if comp.type == 'Form' %}
+                                <div class="mock-ui-title">📝 {{ comp.props.title or 'Interactive Form' }}</div>
+                                <div class="mock-ui-fields">
+                                    {% for field in comp.props.fields %}
+                                    <div class="mock-input-wrap">
+                                        <label class="mock-label">{{ field }}</label>
+                                        <input class="mock-input" type="text" placeholder="Enter {{ field }}...">
+                                    </div>
+                                    {% endfor %}
+                                    <button class="mock-btn" onclick="showToast('Form submitted successfully!')">Submit</button>
+                                </div>
+                            {% elif comp.type == 'Table' %}
+                                <div class="mock-ui-title">📊 {{ comp.props.title or 'Data Table' }}</div>
+                                <div style="overflow-x: auto;">
+                                    <table class="mock-table">
+                                        <thead>
+                                            <tr>
+                                                {% for header in comp.props.headers %}
+                                                <th>{{ header }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                {% for header in comp.props.headers %}
+                                                <td>Sample {{ header }} 1</td>
+                                                {% endfor %}
+                                            </tr>
+                                            <tr>
+                                                {% for header in comp.props.headers %}
+                                                <td>Sample {{ header }} 2</td>
+                                                {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% elif comp.type == 'Button' %}
+                                <button class="mock-btn" style="margin-top:0;" onclick="showToast('Action: {{ comp.props.action }} triggered!')">
+                                    ⚡ {{ comp.props.label or 'Submit Button' }}
+                                </button>
+                            {% elif comp.type == 'Chart' %}
+                                <div class="mock-ui-title">📈 {{ comp.props.title or 'Metrics Chart' }} ({{ comp.props.metric }})</div>
+                                <div class="mock-chart-container">
+                                    <div class="mock-chart-bar" style="--target-height: 80px;" data-val="80%"></div>
+                                    <div class="mock-chart-bar" style="--target-height: 45px;" data-val="45%"></div>
+                                    <div class="mock-chart-bar" style="--target-height: 95px;" data-val="95%"></div>
+                                    <div class="mock-chart-bar" style="--target-height: 60px;" data-val="60%"></div>
+                                </div>
+                            {% else %}
+                                <div class="mock-ui-title">📦 {{ comp.props.title or 'Card Component' }}</div>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+                                    {{ comp.props.content or 'No custom content provided.' }}
+                                </p>
+                            {% endif %}
+                        </div>
+
+                        <!-- JSON Inspector dropdown -->
+                        <details class="inspector-details">
+                            <summary class="inspector-summary">Inspect JSON Props</summary>
+                            <pre class="json-code">{{ json_dumps(comp.props, indent=2) }}</pre>
+                        </details>
+
+                    </section>
+                    {% endfor %}
+                </div>
+
+            </div>
+            {% endfor %}
+            
+            <!-- Compiler Trace Tab Content -->
+            {% if ir %}
+            <div id="compiler-trace" class="page-content-wrapper">
+                
+                <!-- Page Title Area with 3D Shape -->
+                <div class="page-header">
+                    <div class="page-title-group">
+                        <h1 class="page-title">Compiler Trace</h1>
+                        <div class="page-desc">
+                            <span>Pipeline Stage:</span>
+                            <span class="layout-tag" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">Intermediate Representation</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 3D Shape Container -->
+                    <div class="scene3d-container">
+                        <div class="prism-3d"></div>
+                    </div>
+                </div>
+
+                <!-- Pipeline Progress Flowchart -->
+                <div class="pipeline-progress-container">
+                    <h2 class="section-title">Compilation Pipeline Progress</h2>
+                    <div class="flowchart">
+                        <div class="flow-step completed">User Prompt</div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-step completed">Intent Extraction</div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-step active">IR Generation</div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-step">System Design</div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-step">Schema Generation</div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-step">Validation</div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-step">Repair</div>
+                        <div class="flow-arrow">➔</div>
+                        <div class="flow-step">Runtime</div>
+                    </div>
+                </div>
+
+                <!-- IR Info Grid -->
+                <div class="ir-grid">
+                    <!-- App Type & Metadata -->
+                    <div class="ir-card">
+                        <h3>App Specifications</h3>
+                        <div class="ir-item">
+                            <span class="ir-label">App Type:</span>
+                            <span class="ir-value">{{ ir.app_type }}</span>
+                        </div>
+                        <div class="ir-item">
+                            <span class="ir-label">Execution Time:</span>
+                            <span class="ir-value" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #38bdf8;">{{ ir.timestamp }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Features -->
+                    <div class="ir-card">
+                        <h3>Extracted Features</h3>
+                        <div class="badge-list">
+                            {% for feature in ir.features %}
+                            <span class="feature-badge">✨ {{ feature }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Roles -->
+                    <div class="ir-card">
+                        <h3>User Roles</h3>
+                        <div class="badge-list">
+                            {% for role in ir.roles %}
+                            <span class="role-badge">👤 {{ role }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Assumptions -->
+                    <div class="ir-card" style="grid-column: span 2;">
+                        <h3>Compilation Assumptions</h3>
+                        <ul class="assumptions-list">
+                            {% for assumption in ir.assumptions %}
+                            <li>{{ assumption }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Entities -->
+                    <div class="ir-card" style="grid-column: span 2;">
+                        <h3>Intermediate Entities & Data Models</h3>
+                        <div class="entities-grid">
+                            {% for entity in ir.entities %}
+                            <div class="entity-card">
+                                <h4>📦 {{ entity.name }}</h4>
+                                <div class="entity-fields">
+                                    {% for field in entity.fields %}
+                                    <span class="entity-field">{{ field }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collapsible JSON Viewer -->
+                <div class="raw-ir-container">
+                    <details class="inspector-details">
+                        <summary class="inspector-summary" style="font-size: 0.85rem; font-weight: 600; color: #a78bfa;">Inspect Raw ir.json Blueprint</summary>
+                        <pre class="json-code">{{ json_dumps(ir, indent=2) }}</pre>
+                    </details>
+                </div>
+                
+            </div>
+            {% endif %}
+            
+        </main>
+    </div>
+
+    <!-- UI Interaction Script -->
+    <script>
+        function switchPage(pageId, navElement) {
+            // Hide all pages
+            document.querySelectorAll('.page-content-wrapper').forEach(p => {
+                p.classList.remove('active');
+            });
+            // Show target page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+            
+            // Deactivate all navigation items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            // Activate selected tab
+            navElement.classList.add('active');
+        }
+
+        function showToast(message) {
+            // Simple overlay notification
+            const toast = document.createElement('div');
+            toast.style.position = 'fixed';
+            toast.style.bottom = '30px';
+            toast.style.right = '30px';
+            toast.style.background = 'linear-gradient(135deg, #9333ea, #ec4899)';
+            toast.style.color = '#ffffff';
+            toast.style.padding = '0.75rem 1.5rem';
+            toast.style.borderRadius = '8px';
+            toast.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+            toast.style.fontSize = '0.85rem';
+            toast.style.fontWeight = '600';
+            toast.style.zIndex = '9999';
+            toast.style.animation = 'fadeIn 0.3s ease-out';
+            toast.textContent = message;
+
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.transition = 'all 0.5s ease-out';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                setTimeout(() => toast.remove(), 500);
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
